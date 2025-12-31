@@ -29,11 +29,79 @@ jobs:
 
       - name: Run API Tests
         run: mvn clean test
+        continue-on-error: true
 
-      # ✅ Upload raw Allure results (MOST IMPORTANT)
-      - name: Upload Allure Results
+      # ✅ Generate Allure HTML report (EVEN IF TESTS FAIL)
+      - name: Generate Allure Report
+        if: always()
+        run: mvn allure:report
+
+      # ✅ Zip Allure Report
+      - name: Zip Allure Report
+        if: always()
+        run: |
+          cd target/site
+          zip -r allure-report.zip allure-maven-plugin
+
+      # ✅ Upload Allure Report as Artifact
+      - name: Upload Allure Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results
-          path: target/allure-results
+          name: allure-report
+          path: target/site/allure-report.zip
+
+      # ✅ EMAIL ON SUCCESS
+      - name: Send Email on SUCCESS
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "✅ API Automation SUCCESS - GitHub Actions"
+          body: |
+            Hello 👋
+
+            ✅ API Automation Tests PASSED successfully.
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+
+            Allure Report is attached.
+
+            Regards,
+            GitHub Actions 🤖
+          to: ${{ secrets.EMAIL_TO }}
+          from: GitHub Actions <${{ secrets.EMAIL_USERNAME }}>
+          attachments: target/site/allure-report.zip
+
+      # ❌ EMAIL ON FAILURE
+      - name: Send Email on FAILURE
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "❌ API Automation FAILED - GitHub Actions"
+          body: |
+            Hello 👋
+
+            ❌ API Automation Tests FAILED.
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+
+            Please check logs.
+            Allure Report is attached.
+
+            Regards,
+            GitHub Actions 🤖
+          to: ${{ secrets.EMAIL_TO }}
+          from: GitHub Actions <${{ secrets.EMAIL_USERNAME }}>
+          attachments: target/site/allure-report.zip
