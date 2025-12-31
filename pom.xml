@@ -124,6 +124,12 @@
 				</configuration>
 			</plugin>
 
+			<plugin>
+				<groupId>io.qameta.allure</groupId>
+				<artifactId>allure-maven</artifactId>
+				<version>2.11.2</version>
+			</plugin>
+
 			<!-- Maven Surefire Plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -133,12 +139,12 @@
 
 					<!-- REQUIRED FOR ALLURE @Step -->
 					<argLine>
+
+						>
 						-javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/1.9.21/aspectjweaver-1.9.21.jar"
 					</argLine>
 
-					<suiteXmlFiles>
-						<suiteXmlFile>testng.xml</suiteXmlFile>
-					</suiteXmlFiles>
+				
 				</configuration>
 			</plugin>
 
