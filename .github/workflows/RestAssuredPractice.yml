@@ -11,18 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 📥 Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ☕ Setup Java
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 📦 Cache Maven dependencies
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
@@ -30,11 +27,9 @@ jobs:
           key: maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: maven-
 
-      # ▶️ Run API Tests
       - name: Run API Tests
         run: mvn clean test
 
-      # 📊 Upload Allure Results (always)
       - name: Upload Allure Results
         if: always()
         uses: actions/upload-artifact@v4
@@ -42,50 +37,50 @@ jobs:
           name: allure-results
           path: target/allure-results
 
-      # 📧 EMAIL ON SUCCESS
+      # ✅ EMAIL ON SUCCESS
       - name: Email on Success
         if: success()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
-          server_port: 587
-          secure: false
+          server_port: 465
+          secure: true
           username: ${{ secrets.GMAIL_USERNAME }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          from: ${{ secrets.GMAIL_USERNAME }}
-          to: ${{ secrets.EMAIL_TO }}
           subject: "✅ API Tests PASSED - GitHub Actions"
           body: |
             Hi Ganesh,
 
-            ✅ Your API automation build has PASSED successfully.
+            ✅ Your API automation build PASSED successfully.
 
-            You can download the Allure results from:
-            GitHub → Actions → Workflow Run → Artifacts → allure-results
+            Download Allure results from:
+            GitHub Actions → Artifacts → allure-results
 
             Regards,
             GitHub Actions
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.GMAIL_USERNAME }}
 
-      # 📧 EMAIL ON FAILURE
+      # ❌ EMAIL ON FAILURE
       - name: Email on Failure
         if: failure()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
-          server_port: 587
-          secure: false
+          server_port: 465
+          secure: true
           username: ${{ secrets.GMAIL_USERNAME }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          from: ${{ secrets.GMAIL_USERNAME }}
-          to: ${{ secrets.EMAIL_TO }}
           subject: "❌ API Tests FAILED - GitHub Actions"
           body: |
             Hi Ganesh,
 
-            ❌ Your API automation build has FAILED.
+            ❌ Your API automation build FAILED.
 
             Please check logs and download Allure results from:
-            GitHub → Actions → Workflow Run → Artifacts → allure-results
+            GitHub Actions → Artifacts → allure-results
 
             Regards,
             GitHub Actions
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.GMAIL_USERNAME }}
